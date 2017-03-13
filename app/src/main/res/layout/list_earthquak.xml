@@ -8,7 +8,7 @@
               android:gravity="center_vertical"
               android:minHeight="?android:attr/listPreferredItemHeight"
               android:orientation="horizontal"
-              android:padding="8dp">
+              android:padding="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -30,7 +30,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="0.35"
+            android:layout_weight="0.4"
             android:textAlignment="textStart"
             android:textSize="@dimen/text_size_list_item"
             tools:text="New York City"/>
@@ -40,7 +40,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="0.45"
+            android:layout_weight="0.4"
             android:textSize="@dimen/text_size_list_item"
             tools:text="New York City"/>
 
@@ -59,10 +59,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="0.35"
+            android:layout_weight="0.15"
             android:textAlignment="textEnd"
             android:textSize="@dimen/text_size_list_item"
-            tools:text="3:00 PM"/>
+            tools:text="22:00"/>
 
     </LinearLayout>
 
