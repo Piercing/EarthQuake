@@ -22,7 +22,8 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 import Adapters.EarthQuakAdapter;
-import Models.EarthQuak;
+import Helpers.QueryUtils;
+import Models.Earthquake;
 
 public class EarthquakeActivity extends AppCompatActivity {
 
@@ -34,34 +35,14 @@ public class EarthquakeActivity extends AppCompatActivity {
         setContentView(R.layout.earthquake_activity);
 
         // Create a fake list of earthquake locations.
-        ArrayList<EarthQuak> earthquakes = new ArrayList<EarthQuak>();
-        earthquakes.add(new EarthQuak("7.2", "San Francisco", "March 7, 2017"));
-        earthquakes.add(new EarthQuak("3.5", "Londres", "March 3, 2017"));
-        earthquakes.add(new EarthQuak("6.8", "Tokyo", "March 9, 2017"));
-        earthquakes.add(new EarthQuak("2.1", "Ciudad de México", "March 11, 2017"));
-        earthquakes.add(new EarthQuak("8.9", "Moscow", "March 12, 2017"));
-        earthquakes.add(new EarthQuak("5.6", "Rio de Janeiro", "March 10, 2017"));
-        earthquakes.add(new EarthQuak("2.2", "Paris", "March 8, 2017"));
-        earthquakes.add(new EarthQuak("7.2", "San Francisco", "March 7, 2017"));
-        earthquakes.add(new EarthQuak("3.5", "Londres", "March 3, 2017"));
-        earthquakes.add(new EarthQuak("6.8", "Tokyo", "March 9, 2017"));
-        earthquakes.add(new EarthQuak("2.1", "Ciudad de México", "March 11, 2017"));
-        earthquakes.add(new EarthQuak("8.9", "Moscow", "March 12, 2017"));
-        earthquakes.add(new EarthQuak("5.6", "Rio de Janeiro", "March 10, 2017"));
-        earthquakes.add(new EarthQuak("2.2", "Paris", "March 8, 2017"));
-        earthquakes.add(new EarthQuak("7.2", "San Francisco", "March 7, 2017"));
-        earthquakes.add(new EarthQuak("3.5", "Londres", "March 3, 2017"));
-        earthquakes.add(new EarthQuak("6.8", "Tokyo", "March 9, 2017"));
-        earthquakes.add(new EarthQuak("2.1", "Ciudad de México", "March 11, 2017"));
-        earthquakes.add(new EarthQuak("8.9", "Moscow", "March 12, 2017"));
-        earthquakes.add(new EarthQuak("5.6", "Rio de Janeiro", "March 10, 2017"));
-        earthquakes.add(new EarthQuak("2.2", "Paris", "March 8, 2017"));
+        ArrayList<Earthquake> earthquakes = QueryUtils.extractEarthquakes();
+
 
         // Create an {@link EarthQuakAdapter}, whose data source is a list of {@link EarthQuakAdapter}s.
         // The adapter knows how to create list item views for each item in the list.
         EarthQuakAdapter earthQuakAdapter = new EarthQuakAdapter(this, earthquakes);
 
-        // Find a reference to the {@link ListView} in the layout
+        // Find a reference to the {@link ListView} in the layout.
         ListView earthquakeListView = (ListView) findViewById(R.id.list);
 
         // Attach the adapter to the listView.
