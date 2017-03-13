@@ -26,13 +26,14 @@
             android:gravity="center"
             android:textColor="@android:color/white"
             android:textSize="16sp"
-            tools:text="8.9" />
+            tools:text="8.9"/>
 
         <TextView
             android:id="@+id/location_offset"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginLeft="8dp"
             android:layout_weight="0.5"
             android:textAlignment="textStart"
             android:textSize="@dimen/text_size_list_item"
