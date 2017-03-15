@@ -69,6 +69,7 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
 
             @Override
             public void onItemClick( AdapterView<?> adapterView, View view, int position, long l) {
+
                 // Find the current earthquake that was clicked on
                 Earthquake currentEarthquake = mAdapterEarthQuake.getItem(position);
 
