@@ -15,86 +15,105 @@
  */
 package com.example.android.quakereport;
 
-import android.os.AsyncTask;
+import android.app.LoaderManager;
+import android.content.Intent;
+import android.content.Loader;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import Adapters.EarthQuakAdapter;
-import Helpers.QueryUtils;
+import Loaders.EarthquakeLoader;
 import Models.Earthquake;
 
-public class EarthquakeActivity extends AppCompatActivity {
+public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<Earthquake>> {
+
+    private static final String LOG_TAG = EarthquakeActivity.class.getName();
+
+    /** URL for earthquake data from the USGS dataset */
+    private static final String USGS_REQUEST_URL =
+            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmag=6&limit=10";
 
     /**
-     * URL for earthquake data from the USGS dataset
+     * Constant value for the earthquake loader ID. We can choose any integer.
+     * This really only comes into play if you're using multiple loaders.
      */
-    private static final String USGS_REQUEST_URL =
-            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
-           // "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
+    private static final int EARTHQUAKE_LOADER_ID = 1;
+
+    /** Adapter for the list of earthquakes */
+    private EarthQuakAdapter mAdapterEarthQuake;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.earthquake_activity );
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.earthquake_activity);
 
-        // Kick off an {@link AsyncTask} to perform the network request.
-        // Create an {@link AsyncTask} to perform the HTTP request to the given URL
-        // on a background thread. When the result is received on the main UI thread,
-        // then update the UI.
-        EarthquakeAsyncTask task = new EarthquakeAsyncTask( );
-        task.execute( USGS_REQUEST_URL );
+        // Find a reference to the {@link ListView} in the layout
+        ListView earthquakeListView = (ListView) findViewById(R.id.list);
+
+        // Create a new adapter that takes an empty list of earthquakes as input
+        mAdapterEarthQuake = new EarthQuakAdapter(this, new ArrayList<Earthquake>());
+
+        // Set the adapter on the {@link ListView}
+        // so the list can be populated in the user interface
+        earthquakeListView.setAdapter( mAdapterEarthQuake );
+
+        // Set an item click listener on the ListView, which sends an intent to a web browser
+        // to open a website with more information about the selected earthquake.
+        earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick( AdapterView<?> adapterView, View view, int position, long l) {
+                // Find the current earthquake that was clicked on
+                Earthquake currentEarthquake = mAdapterEarthQuake.getItem(position);
+
+                // Convert the String URL into a URI object (to pass into the Intent constructor)
+                assert currentEarthquake != null;
+                Uri earthquakeUri = Uri.parse(currentEarthquake.getUrl());
+
+                // Create a new intent to view the earthquake URI
+                Intent websiteIntent = new Intent(Intent.ACTION_VIEW, earthquakeUri);
+
+                // Send the intent to launch a new activity
+                startActivity(websiteIntent);
+            }
+        });
+
+        // Get a reference to the LoaderManager, in order to interact with loaders.
+        LoaderManager loaderManager = getLoaderManager();
+
+        // Initialize the loader. Pass in the int ID constant defined above and pass in null for
+        // the bundle. Pass in this activity for the LoaderCallbacks parameter (which is valid
+        // because this activity implements the LoaderCallbacks interface).
+        loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
     }
 
-    /**
-     * {@link AsyncTask} to perform the network request on a background thread, and then
-     * update the UI with the first earthquake in the response.
-     */
-    private class EarthquakeAsyncTask extends AsyncTask<String, Void, ArrayList<Earthquake>> {
+    @Override
+    public Loader<ArrayList<Earthquake>> onCreateLoader( int i, Bundle bundle) {
+        // Create a new loader for the given URL
+        return new EarthquakeLoader(this, USGS_REQUEST_URL);
+    }
 
-        @Override
-        protected ArrayList<Earthquake> doInBackground( String... urls ) {
+    @Override
+    public void onLoadFinished(Loader<ArrayList<Earthquake>> loader, ArrayList<Earthquake> earthquakes) {
+        // Clear the adapter of previous earthquake data
+        mAdapterEarthQuake.clear();
 
-            // Don't perform the request if there are no URLs, or the first URL is nul.
-            if ( urls.length < 1 || urls[ 0 ] == null ) {
-                return null;
-            }
-
-            // Perform the HTTP request for earthquake data and process the response.
-            // En vez de pasar la constante USGS_REQUEST_URL, paso [0] para que pueda aceptar cualquier url.
-            ArrayList<Earthquake> result = QueryUtils.fetchEarthquakeData( USGS_REQUEST_URL );
-
-            // Return the {@link Event} object as the result for the {@link EarthquakeAsyncTask}
-            // Este resultado que devuelve, se pasa como parámetro al método 'onPostExecute'.
-            return result;
+        // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
+        // data set. This will trigger the ListView to update.
+        if (earthquakes != null && !earthquakes.isEmpty()) {
+            mAdapterEarthQuake.addAll(earthquakes);
         }
+    }
 
-        /**
-         * Update the screen with the given earthquake (which was the result of the
-         * {@link EarthquakeAsyncTask}).
-         */
-        @Override
-        protected void onPostExecute( ArrayList<Earthquake> result ) {
-
-            if ( result == null ) {
-                Toast.makeText( EarthquakeActivity.this, "Not result found for this end point", Toast.LENGTH_SHORT ).show( );
-                return;
-            }
-
-            // Create an {@link EarthQuakAdapter}, whose data source is a list of {@link EarthQuakAdapter}s.
-            // The adapter knows how to create list item views for each item in the list.
-            EarthQuakAdapter earthQuakAdapter = new EarthQuakAdapter( getApplicationContext( ), result );// Aquí tengo que pasarle el arrayList con Earthquake.
-
-            // Find a reference to the {@link ListView} in the layout.
-            ListView earthquakeListView = ( ListView ) findViewById( R.id.list );
-
-            // Attach the adapter to the listView.
-            assert earthquakeListView != null;
-            earthquakeListView.setAdapter( earthQuakAdapter );
-
-        }
+    @Override
+    public void onLoaderReset(Loader<ArrayList<Earthquake>> loader) {
+        // Loader reset, so we can clear out our existing data.
+        mAdapterEarthQuake.clear();
     }
 }
