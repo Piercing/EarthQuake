@@ -41,11 +41,13 @@ public final class QueryUtils {
      * Query the USGS dataset and return an {@link Earthquake} object to represent a single earthquake.
      */
     public static ArrayList<Earthquake> fetchEarthquakeData( String requestUrl ) {
-        // Create URL object
+
+        // Create URL object.
         URL url = createUrl( requestUrl );
 
-        // Perform HTTP request to the URL and receive a JSON response back
+        // Perform HTTP request to the URL and receive a JSON response back.
         String jsonResponse = null;
+
         try {
             jsonResponse = makeHttpRequest( url );
         } catch ( IOException e ) {
@@ -55,7 +57,7 @@ public final class QueryUtils {
         // Extract relevant fields from the JSON response and create an {@link Event} object
         ArrayList<Earthquake> earthquake = extractEarthquakesFromJson( jsonResponse );
 
-        // Return the {@link Event}
+        // Return the {@link Earthquake}.
         return earthquake;
     }
 
@@ -85,6 +87,7 @@ public final class QueryUtils {
 
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
+
         try {
             urlConnection = ( HttpURLConnection ) url.openConnection( );
             urlConnection.setReadTimeout( 10000 /* milliseconds */ );
@@ -120,15 +123,17 @@ public final class QueryUtils {
     }
 
     /**
-     * Convert the {@link InputStream} into a String which contains the
-     * whole JSON response from the server.
+     * Convert the {@link InputStream} into a String which contains the whole JSON response from the server.
      */
     private static String readFromStream( InputStream inputStream ) throws IOException {
 
+        // To create a StingBuilder, this is mutable.
         StringBuilder output = new StringBuilder( );
 
         if ( inputStream != null ) {
             InputStreamReader inputStreamReader = new InputStreamReader( inputStream, Charset.forName( "UTF-8" ) );
+
+            // Create a BufferReader for reader a string line complete.
             BufferedReader reader = new BufferedReader( inputStreamReader );
             String line = reader.readLine( );
 
@@ -137,27 +142,28 @@ public final class QueryUtils {
                 line = reader.readLine( );
             }
         }
+        // Return output convert to string.
         return output.toString( );
     }
 
     /**
-     * Return a list of {@link Earthquake} objects that has been built up from
-     * parsing a JSON response.
+     * Return a list of {@link Earthquake} objects that has been built up from parsing a JSON response.
      */
     private static ArrayList<Earthquake> extractEarthquakesFromJson( String earthquakeJSON ) {
 
-        //IF the JSON string is empty or null, then return early.
+        // If the JSON string is empty or null, then return early.
         if ( TextUtils.isEmpty( earthquakeJSON ) ) {
             return null;
         }
         // Create an empty ArrayList that we can start adding earthquakes to
         ArrayList<Earthquake> earthquakes = new ArrayList<>( );
 
-        // Try to parse the SAMPLE_JSON_RESPONSE. If there's a problem with the way the JSON
-        // is formatted, a JSONException exception object will be thrown.
+        // Try to parse the SAMPLE_JSON_RESPONSE. If there's a problem with the way
+        // the JSON is formatted, a 'JSONException' exception object will be thrown.
         // Catch the exception so the app doesn't crash, and print the error message to the logs.
         try {
-            // Get root.
+
+            // Get base Json response.
             JSONObject baseJsonResponse = new JSONObject( earthquakeJSON );
 
             // Get JSONArray from 'features'.
@@ -165,7 +171,7 @@ public final class QueryUtils {
 
             if ( featuresArray.length( ) > 0 ) {
 
-                // Loop through eacj feature in the array.
+                // Loop through each feature in the array.
                 for ( int i = 0; i < featuresArray.length( ); i++ ) {
 
                     // Get earthquake JSONObject at position 'i'.
@@ -178,12 +184,14 @@ public final class QueryUtils {
                     double mag = properties.getDouble( "mag" );
                     String place = properties.getString( "place" );
                     long time = properties.getLong( "time" );
+                    String url = properties.getString( "url" );
 
                     // Create Earthquake java object form magnitude, location
                     // & time, & add earthquake object to list of earthquakes.
-                    earthquakes.add( new Earthquake( mag, place, time ) );
+                    earthquakes.add( new Earthquake( mag, place, time, url ) );
                 }
             }
+
         } catch ( JSONException e ) {
             // If an error is thrown when executing any of the above stat ements in the "try" block, catch the
             // exception here, so the app doesn't crash. Print a log message with the message from the exception.
@@ -192,5 +200,4 @@ public final class QueryUtils {
         // Return the list of earthquakes
         return earthquakes;
     }
-
 }

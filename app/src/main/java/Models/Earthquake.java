@@ -10,6 +10,7 @@ public class Earthquake {
     private double mMagnitude;
     private String mLocation;
     private long mTimeInMilliseconds;
+    private String mUrl;
 
     /**
      * Constructs a new {@link Earthquake} object.
@@ -20,26 +21,30 @@ public class Earthquake {
      *                           earthquake happened
      */
 
-    public Earthquake(double magnitude, String location, long timeInMilliseconds) {
+    public Earthquake( double magnitude, String location, long timeInMilliseconds, String url ) {
         mMagnitude = magnitude;
         mLocation = location;
         mTimeInMilliseconds = timeInMilliseconds;
+        mUrl = url;
     }
 
-    public double getmMagnitude() {
+    public double getmMagnitude( ) {
         return mMagnitude;
     }
 
-    public String getLocation() {
+    public String getLocation( ) {
         return mLocation;
     }
 
-    public long getTimeInMilliseconds() {
+    public long getTimeInMilliseconds( ) {
         return mTimeInMilliseconds;
     }
 
+    public String getUrl( ) { return mUrl; }
+
+
     @Override
-    public String toString() {
+    public String toString( ) {
         return "EarthQuakAdapter{" +
                 "mMagnitude=" + mMagnitude +
                 ", mLocation='" + mLocation + '\'' +
