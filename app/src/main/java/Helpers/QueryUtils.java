@@ -42,6 +42,12 @@ public final class QueryUtils {
      */
     public static ArrayList<Earthquake> fetchEarthquakeData( String requestUrl ) {
 
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         Log.i( LOG_TAG, "TEST: fetchEarthquakeData() called..." );
 
         // Create URL object.
