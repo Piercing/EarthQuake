@@ -18,10 +18,14 @@ package com.example.android.quakereport;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -40,8 +44,7 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
     /**
      * URL for earthquake data from the USGS dataset
      */
-    private static final String USGS_REQUEST_URL =
-            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmag=6&limit=10";
+    private static final String USGS_REQUEST_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query";
 
     /**
      * Constant value for the earthquake loader ID. We can choose any integer.
@@ -73,15 +76,17 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
         // Create a new adapter that takes an empty list of earthquakes as input.
         mAdapterEarthQuake = new EarthQuakAdapter( this, new ArrayList<Earthquake>( ) );
 
-        // Set the adapter on the {@link ListView} so the list can be populated in the user interface.
+        // Set the adapter on the {@link ListView} so the
+        // list can be populated in the 'user interface'.
         earthquakeListView.setAdapter( mAdapterEarthQuake );
 
         // Set this view when list is empty.
         mEmptyStateTextView = ( TextView ) findViewById( R.id.empty_view );
         earthquakeListView.setEmptyView( mEmptyStateTextView );
 
-        // Set an item click listener on the ListView, which sends an intent to a web browser
-        // to open a website with more information about the selected earthquake.
+
+        // Set an item click listener on the 'ListView', which sends an intent to a web
+        // browser to open a website with more information about the selected earthquake.
         earthquakeListView.setOnItemClickListener( new AdapterView.OnItemClickListener( ) {
 
             @Override
@@ -94,16 +99,17 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
                 assert currentEarthquake != null;
                 Uri earthquakeUri = Uri.parse( currentEarthquake.getUrl( ) );
 
-                // Create a new intent to view the earthquake URI
+                // Create a new intent to view the earthquake URI.
                 Intent websiteIntent = new Intent( Intent.ACTION_VIEW, earthquakeUri );
 
-                // Send the intent to launch a new activity
+                // Send the intent to launch a new activity.
                 startActivity( websiteIntent );
             }
         } );
 
         // Get a reference to the LoaderManager, in order to interact with loaders.
         LoaderManager loaderManager = getLoaderManager( );
+
         // Initialize the loader. Pass in the int ID constant defined above and pass in null for
         // the bundle. Pass in this activity for the LoaderCallbacks parameter (which is valid
         // because this activity implements the LoaderCallbacks interface).
@@ -112,20 +118,59 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
     }
 
     @Override
+    public boolean onCreateOptionsMenu( Menu menu ) {
+        getMenuInflater( ).inflate( R.menu.main, menu );
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) {
+
+        int id = item.getItemId( );
+
+        if ( id == R.id.action_settings ) {
+            Intent settingsIntent = new Intent( this, SettingsActivity.class );
+            startActivity( settingsIntent );
+            return true;
+        }
+        return super.onOptionsItemSelected( item );
+    }
+
+    @Override
     public Loader<ArrayList<Earthquake>> onCreateLoader( int i, Bundle bundle ) {
 
         Log.i( LOG_TAG, "TEST: onCreateLoader() called..." );
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences( this );
+
+        String minMagnitude = sharedPreferences.getString(
+                getString( R.string.settings_min_magnitude_key ),
+                getString( R.string.settings_min_magnitude_default ) );
+
+        String orderBy = sharedPreferences.getString(
+                getString( R.string.settings_order_by_key ),
+                getString( R.string.settings_order_by_default )
+        );
+
+
+        Uri baseUri = Uri.parse( USGS_REQUEST_URL );
+        Uri.Builder uriBuilder = baseUri.buildUpon( );
+
+        uriBuilder.appendQueryParameter( "format", "geojson" );
+        uriBuilder.appendQueryParameter( "limit", "10" );
+        uriBuilder.appendQueryParameter( "minmag", minMagnitude );
+        uriBuilder.appendQueryParameter( "orderby", orderBy );
+
         // Create a new loader for the given URL.
-        return new EarthquakeLoader( this, USGS_REQUEST_URL );
+        return new EarthquakeLoader( this, uriBuilder.toString( ) );
     }
 
     @Override
     public void onLoadFinished( Loader<ArrayList<Earthquake>> loader, ArrayList<Earthquake> earthquakes ) {
 
-        // Hide loading indicator because the data has been loaded
-        View loadingIndicator = findViewById(R.id.loading_indicator);
-        loadingIndicator.setVisibility(View.GONE);
+        // Hide loading indicator because the data has been loaded.
+        View loadingIndicator = findViewById( R.id.loading_indicator );
+        loadingIndicator.setVisibility( View.GONE );
 
         Log.i( LOG_TAG, "TEST: onLoadFinished() called..." );
 
